@@ -38,37 +38,33 @@ def create_table_movie():
 
 movieTable = resource.Table('Movie')
 
-
-def write_movie_info(imdb_title_id, title, original_title, year, date_published, 
-                    genre, duration, country, language, director, 
-                    writer, production_company, actors, description, avg_vote, votes, budget, 
-                    usa_gross_income, worlwide_gross_income, metascore, reviews_from_users, reviews_from_critics):
+def write_movie_info(data):
     response = movieTable.put_item(
         Item = {
-            'imdb_title_id'          :  imdb_title_id, 
-            'title'                  :  title, 
-            'original_title'         :  original_title,  
-            'year'                   :  year, 
-            'date_published'         :  date_published, 
-            'genre'                  :  genre, 
-            'duration'               :  duration, 
-            'country'                :  country, 
-            'language'               :  language, 
-            'director'               :  director, 
-            'writer'                 :  writer, 
-            'production_company'     :  production_company, 
-            'actors'                 :  actors,  
-            'description'            :  description, 
-            'avg_vote'               :  avg_vote,
-            'votes'                  :  votes,
-            'budget'                 :  budget,
-            'usa_gross_income'       :  usa_gross_income,
-            'worlwide_gross_income'  :  worlwide_gross_income,
-            'metascore'              :  metascore, 
-            'reviews_from_users'     :  reviews_from_users, 
-            'reviews_from_critics'   :  reviews_from_critics
+            'id'          :  int(data['imdb_title_id'].split('tt')[1]),
+            'imdb_title_id'          :  data['imdb_title_id'], 
+            'title'                  :  data['title'], 
+            'original_title'         :  data['original_title'],  
+            'year'                   :  data['year'], 
+            'date_published'         :  data['date_published'], 
+            'genre'                  :  data['genre'], 
+            'duration'               :  data['duration'], 
+            'country'                :  data['country'], 
+            'language'               :  data['language'], 
+            'director'               :  data['director'], 
+            'writer'                 :  data['writer'], 
+            'production_company'     :  data['production_company'], 
+            'actors'                 :  data['actors'],  
+            'description'            :  data['description'], 
+            'avg_vote'               :  data['avg_vote'],
+            'votes'                  :  data['votes'],
+            'budget'                 :  data['budget'],
+            'usa_gross_income'       :  data['usa_gross_income'],
+            'worlwide_gross_income'  :  data['worlwide_gross_income'],
+            'metascore'              :  data['metascore'], 
+            'reviews_from_users'     :  data['reviews_from_users'], 
+            'reviews_from_critics'   :  data['reviews_from_critics']
         }
     )
     return response
-
 
