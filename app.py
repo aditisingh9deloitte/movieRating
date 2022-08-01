@@ -1,6 +1,7 @@
-from crypt import methods
+from werkzeug.security import generate_password_hash, check_password_hash
 import boto3
-from flask import Flask,request,jsonify
+import uuid
+from flask import Flask,request,jsonify,make_response
 import movie_service as dynamodb
 import csv,os
 
@@ -18,6 +19,57 @@ def allowed_file(filename):
 def root_route():
     dynamodb.create_table_movie()
     return 'Table created'    
+
+# @app.route('/createUserTable')
+# def route_user():
+#     dynamodb.create_table_user()
+#     return 'Table created'
+
+# @app.route('/signup', methods=['POST'])
+# def signup():
+#     if request.method == 'POST':
+
+#         name     = request.data['name']
+#         username = request.data['username']
+#         email    = request.data['email']
+#         password = request.data['password']
+#         userid = public_id=str(uuid.uuid4())
+
+#         hashed_password = generate_password_hash(password, method='sha256')
+
+#         dynamodb.signup(userid, username, name, email, hashed_password)
+#         response  = jsonify({'message' : 'New user created!'}), 201
+#         return response
+    
+# @app.route('/login', methods=['POST'])
+# def login():
+
+#     auth = request.authorization 
+#     username = auth.username
+#     password = auth.password
+#     response = None
+    
+#     if not username or not password:
+
+#         response = make_response('Could not verify, Incorrect username or password', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
+#     user =  dynamodb.userTable.get_item(
+#         Key = {
+#             'email'     : email
+#         },
+#         AttributesToGet = ['title', 'description', 'author', 'publisher', 'year', 'isbn']
+#     )
+
+#     if not user:
+#         app.logger.error('Could not verify')
+#         response = make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
+#     if check_password_hash(user.password, password):
+#         token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=120)}, app.config['SECRET_KEY'])
+
+#         response = jsonify({'token' : token.decode('UTF-8')})
+
+#     return response      
 
 @app.route('/upload', methods=['POST'])
 def file_upload():
@@ -111,7 +163,6 @@ def filteration_wrt_given_user_review():
         'message'      : 'Data retreived successfully'
         }), 200
 
-
 @app.route('/filter_highest_budget_movies', methods=['GET'])
 def highest_budget_movies():
 
@@ -159,83 +210,6 @@ def delete_movie_info(id):
         'msg': 'Some error occcured',
         'response': response
     } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-@app.route('/upload', methods=['POST'])
-def file_upload():
-    file = request.files['file']
-    data = pd.read_csv(file)
-
-    colums = data.columns
-    length = len(colums)
-    
-    for i in data.index:  #rows
-
-        if(data.loc[i,'genre'] == 'Drama'): print("yes")
-
-        for j in range(length):  # columns
-            print(data.iloc[i,j], end=' ')
-        print()
-        
-    return {
-        'msg' : 'success'
-    }
-'''
-
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)

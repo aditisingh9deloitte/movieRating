@@ -40,12 +40,43 @@ def create_table_movie():
     )
     return table
 
+# def create_table_user():    
+#     table = resource.create_table(
+#         TableName = 'user', 
+#         KeySchema = [
+#             {
+#                 'AttributeName'  : 'email',
+#                 'KeyType'        : 'HASH' 
+#             },
+#             {
+#                 'AttributeName'  : 'username',
+#                 'KeyType'        : 'S' 
+#             }
+#         ],
+#         AttributeDefinitions = [
+#             {
+#                 'AttributeName'  : 'email',
+#                 'AttributeType'  : 'S'   
+#             },
+#             {
+#                 'AttributeName'  : 'username',
+#                 'AttributeType'  : 'S' 
+#             }                         
+#         ],
+#         ProvisionedThroughput={
+#             'ReadCapacityUnits'  : 20,
+#             'WriteCapacityUnits': 20
+#         }
+#     )
+#     return table
+
 movieTable = resource.Table('Movie')
+# userTable = resource.Table('user')
 
 def write_movie_info(data):
     response = movieTable.put_item(
         Item = {
-            'id'          :  int(data['imdb_title_id'].split('tt')[1]),
+            'id'                     :  int(data['imdb_title_id'].split('tt')[1]),
             'imdb_title_id'          :  data['imdb_title_id'], 
             'title'                  :  data['title'], 
             'original_title'         :  data['original_title'],  
@@ -72,6 +103,30 @@ def write_movie_info(data):
     )
     return response
 
+# def write_user_info(data):
+#     response = userTable.put_item(
+#         Item = {
+#             'email'                  :  data['email'],
+#             'username'               :  data['username'],
+#             'name'                   :  data['name'],  
+#             'password'               :  data['password']
+#         }
+#     )
+#     return response
+
+# def signup(userid, username, name, email, password):
+        
+#     table = userTable.Table('user')     
+#     table.put_item(
+#     Item = {
+#         'userid'    : userid,
+#         'username'  : username,
+#         'name'      : name,
+#         'email'     : email,
+#         'password'  : password
+#         }
+#     )
+
 def get_movie_info_wrt_director(director, yearFrom, yearTo):
     response = movieTable.scan(FilterExpression=Attr('director').eq(director) & Attr('year').between(yearFrom, yearTo))
     data = response['Items']
@@ -84,7 +139,7 @@ def get_movies_greater_than_given_user_review(user_review):
     return sorted_data
 
 def get_highest_budget_movies(country, year):
-    response = movieTable.scan(FilterExpression=Attr('year').eq(year) & Attr('country').eq(country))
+    response = movieTable.scan(FilterExpression=Attr('year').eq(year) & Attr('country').contains(country))
     data = response['Items']
     sorted_data = sorted(data,key = lambda x:  int(re.sub('[^0-9]', '', x["budget"])) if len(x["budget"]) > 0 else 0, reverse=True)
     return sorted_data
