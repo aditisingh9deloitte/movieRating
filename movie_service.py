@@ -1,3 +1,7 @@
+import re
+import datetime
+from unicodedata import decimal
+from boto3.dynamodb.conditions import Key,Attr
 from boto3 import resource
 import config
 
@@ -27,7 +31,7 @@ def create_table_movie():
             {
                 'AttributeName': 'id', # Name of the attribute
                 'AttributeType': 'N'   # N = Number (S = String, B= Binary)
-            }
+            }                         
         ],
         ProvisionedThroughput={
             'ReadCapacityUnits'  : 20,
@@ -45,10 +49,10 @@ def write_movie_info(data):
             'imdb_title_id'          :  data['imdb_title_id'], 
             'title'                  :  data['title'], 
             'original_title'         :  data['original_title'],  
-            'year'                   :  data['year'], 
+            'year'                   :  int(data['year']) if len(data['year']) > 0 else data['year'], 
             'date_published'         :  data['date_published'], 
             'genre'                  :  data['genre'], 
-            'duration'               :  data['duration'], 
+            'duration'               :  int(data['duration']) if len(data['duration']) > 0 else data['duration'], 
             'country'                :  data['country'], 
             'language'               :  data['language'], 
             'director'               :  data['director'], 
@@ -57,14 +61,40 @@ def write_movie_info(data):
             'actors'                 :  data['actors'],  
             'description'            :  data['description'], 
             'avg_vote'               :  data['avg_vote'],
-            'votes'                  :  data['votes'],
+            'votes'                  :  int(data['votes']) if len(data['votes']) > 0 else data['votes'],
             'budget'                 :  data['budget'],
             'usa_gross_income'       :  data['usa_gross_income'],
             'worlwide_gross_income'  :  data['worlwide_gross_income'],
             'metascore'              :  data['metascore'], 
-            'reviews_from_users'     :  data['reviews_from_users'], 
-            'reviews_from_critics'   :  data['reviews_from_critics']
+            'reviews_from_users'     :  int(data['reviews_from_users']) if len(data['reviews_from_users']) > 0 else data['reviews_from_users'], 
+            'reviews_from_critics'   :  int(data['reviews_from_critics']) if len(data['reviews_from_critics']) > 0 else data['reviews_from_critics']
         }
     )
+    return response
+
+def get_movie_info_wrt_director(director, yearFrom, yearTo):
+    response = movieTable.scan(FilterExpression=Attr('director').eq(director) & Attr('year').between(yearFrom, yearTo))
+    data = response['Items']
+    return data
+
+def get_movies_greater_than_given_user_review(user_review):
+    response = movieTable.scan(FilterExpression=Attr('reviews_from_users').gte(user_review))
+    data = response['Items']
+    sorted_data = sorted(data,key = lambda x:x["reviews_from_users"], reverse=True)
+    return sorted_data
+
+def get_highest_budget_movies(country, year):
+    response = movieTable.scan(FilterExpression=Attr('year').eq(year) & Attr('country').eq(country))
+    data = response['Items']
+    sorted_data = sorted(data,key = lambda x:  int(re.sub('[^0-9]', '', x["budget"])) if len(x["budget"]) > 0 else 0, reverse=True)
+    return sorted_data
+
+def delete_movie_information(id):
+    response = movieTable.delete_item(
+        Key = {
+            'id': id
+        }
+    )
+
     return response
 
